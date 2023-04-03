@@ -5,4 +5,7 @@
 /data/time_week
 /data/last-all-airbox.json
 /data/*.tar.gz
+/data/*.gz
+/data/all_device_id.json
+/*.json
 /*.tar.gz
