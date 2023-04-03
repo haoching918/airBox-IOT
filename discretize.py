@@ -3,22 +3,6 @@ import datetime as dt
 
 def getScale(hour):
     return str(hour // 3)
-    if t == 0:
-        return str(t)
-    elif t == 1:
-        return str(t)
-    elif t == 2:
-        return str(t)
-    elif t == 3:
-        return str(t)
-    elif t == 4:
-        return str(t)
-    elif t == 5:
-        return str(t)
-    elif t == 6:
-        return str(t)
-    elif t == 7:
-        return str(t)
 
 def initDeviceData():
     # history per airbox
@@ -136,24 +120,3 @@ for i in range(8):
         with open(f'./data/time_week/{curDatetime}-{j}.json', 'w') as f:
             f.write(jsonData)
         print(f'{i*7+j} ./data/time_week/{curDatetime}-{j}.json saved')
-            
-# def grid(timeWeekData):
-#     feat = { 'type' : 'FeatureCollection', 'features': [] }
-#     for d in timeWeekData:
-#         feat['features'].append({ 
-#                                     'geometry': {
-#                                             'type': 'Point',
-#                                             'coordinates' : [d['gps_lon'], d['gps_lat']] 
-#                                         }, 
-#                                     'type': 'Feature', 
-#                                     'properties': { 'solRad': d['pm2.5'] } 
-#                                 })
-#     options = {
-#         'gridType' : 'hex',
-#         'property' : 'solRad',
-#         'units' : 'miles',
-#         'weight' : 6
-#     }
-#     grid = interpolate(feat, 1, options)
-
-# def interpolate():
