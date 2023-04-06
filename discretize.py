@@ -13,12 +13,13 @@ def initDeviceData():
         'gps_lat' : None,
         'startTime': startDatetime.strftime("%Y-%m-%d %H:%M:%S"),
         'endTime': endDatetime.strftime("%Y-%m-%d %H:%M:%S"),
+        'timeScale': timeScale,
         'data': {}
     }
     dateData = {}
-    for i in range(8):
+    for i in range(24//timeScale):
         scaleData = {}
-        for j in range(8):
+        for j in range(24//timeScale):
             scaleData[str(j)] = {'pm2.5' : [], 
                                  'avgPm2.5': None,
                                  'humidity': [],
@@ -53,6 +54,8 @@ with open('./info.json', 'r') as f:
     info = json.load(f)
 endDatetime = dt.datetime.strptime(info['update_datetime'][:13], '%Y-%m-%d %H') # current date time without min and sec
 startDatetime = endDatetime - dt.timedelta(days=7)
+# get time scale
+timeScale = info['time_scale']
 
 # get all device id
 with open('./data/all_device_id.json','r') as f:
@@ -95,8 +98,8 @@ for i in devicesId:
     cnt += 1
 
 # store all discretized device data of certain time scale in time_week
-for i in range(8):
-    for j in range(8):
+for i in range(24 // timeScale):
+    for j in range(24 // timeScale):
         curDatetime = (startDatetime + dt.timedelta(days=i)).date()
         timeWeek = {
                 'timeStamp': str(curDatetime),

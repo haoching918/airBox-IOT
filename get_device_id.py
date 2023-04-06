@@ -34,8 +34,10 @@ jsonData = json.dumps(idDict)
 with open('./data/all_device_id.json', mode='w') as f:
     f.write(jsonData)
     
+timeScale = 3   # set time scale for discretize history data
 info = {
-    'update_datetime' : datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
+    'update_datetime' : datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S'),
+    'time_scale' : timeScale
 }
 jsonData = json.dumps(info, indent=4)
 with open('./info.json', 'w') as f:
