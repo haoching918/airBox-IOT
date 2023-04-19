@@ -41,7 +41,7 @@ class Map {
 		this.draw()
 	}
 	draw() {
-		this.maps = L.map('map', { layers: [this.Stamen_Terrain, this.idw] }).setView(this.latlng, this.zoom);
+		this.maps = L.map('map', { layers: [this.OpenStreetMap_Mapnik, this.idw] }).setView(this.latlng, this.zoom);
 		this.drawLegend()
 		this.baseMaps = {
 			"街道圖": this.OpenStreetMap_Mapnik,
