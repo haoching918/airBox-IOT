@@ -1,9 +1,18 @@
 # airBox-IOT
 
-## prereqest
-Make sure to have python and node installed
+## About
 
-## load realtime data
+A data visualization tool to monitor real time and history air data
+
+## Interface overview
+
+![](https://i.imgur.com/0ozRYkQ.png)
+
+
+## Prereqest
+Make sure to have python3 and node installed
+
+## Load realtime data
 
 ### get device id
 Run `get_device_id.py`, it will create a list of id indicate the current running airBox. It will also generate `info.json` to store update time
@@ -21,3 +30,8 @@ Run `discretize.py` to generate discetize 7 days data for each airBox to `./data
 ### convert data to geojson
 
 Run `datapreprocessing.js` to create geojson for leaflet to visualize
+
+## Run
+
+run the `index.html` with live server
+
