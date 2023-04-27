@@ -1,9 +1,9 @@
 /data/device_week
 /data/discretized_device_week
+/data/wind
 /data/geojson
 /data/node_modules
 /data/time_week
-/data/last-all-airbox.json
 /data/*.tar.gz
 /data/*.gz
 /data/all_device_id.json
