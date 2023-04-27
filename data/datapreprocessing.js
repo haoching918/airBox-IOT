@@ -83,18 +83,20 @@ async function main() {
     const data = await fs.readFile("../info.json", 'utf-8')
     info = JSON.parse(data)
 
-    var newDateStr = info["update_datetime"].slice(0, 10)
-    var newTimeScale = parseInt(info["update_datetime"].slice(11, 13)) / 3 - 1
-    var newDate = genDate("-", newDateStr, newTimeScale)
+    var dateStr = info["update_datetime"]
+    var timeScale = info["time_scale"]
+    var newDateStr = dateStr.slice(0, 10)
+    var newTime = ~~(parseInt(dateStr.slice(11, 13)) / timeScale) - 1
+    var newDate = genDate("-", newDateStr, newTime)
     var startDate = newDate.addDays(-7)
     var curDate = newDate
-    var curTimeScale = newTimeScale
+    var curTime = newTime
 
-    for (let i = 55; i >= 0; i--) {
-        fileName = curDate.yyyymmdd() + "-" + String(curTimeScale)
+    for (let i = ~~(parseInt(dateStr.slice(11, 13)) / timeScale) * 7 - 1; i >= 0; i--) {
+        fileName = curDate.yyyymmdd() + "-" + String(curTime)
         generate_geojson(fileName)
-        if (--curTimeScale < 0) {
-            curTimeScale += 8
+        if (--curTime < 0) {
+            curTime += 8
             curDate = curDate.addDays(-1)
         }
     }
