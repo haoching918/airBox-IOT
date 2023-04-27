@@ -88,7 +88,7 @@ class Map {
 }
 async function animate() {
 	var date = startDate
-	var time = newTimeScale + 1
+	var time = newTime + 1
 	for (let i = 0; i < 56; i++) {
 		setCurDate(date.yyyymmdd(), time)
 		let path = "./data/geojson/" + date.yyyymmdd() + "-" + time + ".json"
@@ -287,7 +287,7 @@ function initSelector() {
 	var dateSelector = document.getElementById("dateSelector")
 	dateSelector.max = newDate.yyyymmdd()
 	dateSelector.min = newDate.addDays(-7).yyyymmdd()
-	document.getElementById("last_update").innerHTML = `最後更新時間 ${newDate.yyyymmdd()} ${(newTimeScale + 1) * 3}:00 GMT+0`
+	document.getElementById("last_update").innerHTML = `最後更新時間 ${newDate.yyyymmdd()} ${(newTime + 1) * 3}:00 GMT+0`
 }
 
 async function fetch_json(path) {
@@ -316,17 +316,18 @@ Date.prototype.yyyymmdd = function () {
 };
 
 var info = await fetch_json("./info.json")
-var newDateStr = info["update_datetime"].slice(0, 10) // yyyy-mm-dd
-var newTimeScale = parseInt(info["update_datetime"].slice(11, 13)) / 3 - 1 // 0-7 int
-var newDate = genDate("-", newDateStr, newTimeScale)
+var dateStr = info["update_datetime"]
+var newDateStr = dateStr.slice(0, 10) // yyyy-mm-dd
+var newTime = ~~(parseInt(dateStr.slice(11, 13)) / 3) - 1 // 0-7 int
+var newDate = genDate("-", newDateStr, newTime)
 var startDate = newDate.addDays(-7)
 
-setCurDate(newDateStr, newTimeScale)
+setCurDate(newDateStr, newTime)
 initSelector()
 
-var timeDevicesData = await fetch_json("./data/time_week/" + newDateStr + "-" + String(newTimeScale) + ".json")
+var timeDevicesData = await fetch_json("./data/time_week/" + newDateStr + "-" + String(newTime) + ".json")
 var deviceWeekData = await fetch_json("./data/discretized_device_week/74DA38F70318.json")
-var geojson = await fetch_json("./data/geojson/" + newDateStr + "-" + String(newTimeScale) + ".json")
+var geojson = await fetch_json("./data/geojson/" + newDateStr + "-" + String(newTime) + ".json")
 
 var myMap = new Map(timeDevicesData, geojson)
 var myChart = new Linechart(deviceWeekData)
