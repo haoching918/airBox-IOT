@@ -8,7 +8,7 @@ def valid(d):
         return False
     if d['gps_lon'] < 120 or d['gps_lon'] > 122:
         return False
-    if d['gps_lat'] < 22 or d['gps_lat'] > 25:
+    if d['gps_lat'] < 22:
         return False
     return True
 

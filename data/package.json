@@ -1,6 +1,8 @@
 {
   "dependencies": {
+    "@turf/interpolate": "^6.5.0",
     "@turf/turf": "^6.5.0",
+    "topojson": "^3.0.2",
     "turf": "^3.0.14"
   }
 }

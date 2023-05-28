@@ -1,5 +1,6 @@
 import json
 import datetime as dt
+import os
 
 def getScale(hour):
     return str(hour // 3)
@@ -65,6 +66,13 @@ devicesId = devicesIdJson['id']
 allDeviceWeek = [] # store discretized device data of a week in discretized_device_week
 
 cnt = 1
+
+path_data = './data'
+path_discretized_week = '/discretized_device_week'
+
+if not os.path.exists(path_data + path_discretized_week):
+    os.mkdir(path_data + path_discretized_week)
+
 for i in devicesId:
     with open(f"./data/device_week/{i}.json", 'r') as f:
         weekData = json.load(f)
@@ -92,11 +100,14 @@ for i in devicesId:
     allDeviceWeek.append(deviceWeek)
     
     jsonData = json.dumps(deviceWeek)
-    with open(f'./data/discretized_device_week/{i}.json', 'w') as f:
+    with open(path_data + path_discretized_week+ f'/{i}.json', 'w') as f:
         f.write(jsonData)
-    print(f'{cnt} ./data/discretized_device_week/{i}.json saved')
+    print(f'{cnt} ' + path_data + path_discretized_week + f'/{i}.json saved')
     cnt += 1
 
+path_time = '/time_week'
+if not os.path.exists(path_data + path_time):
+    os.mkdir(path_data + path_time)
 # store all discretized device data of certain time scale in time_week
 for i in range(24 // timeScale):
     for j in range(24 // timeScale):

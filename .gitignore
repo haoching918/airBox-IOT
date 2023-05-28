@@ -9,3 +9,4 @@
 /data/all_device_id.json
 /*.json
 /*.tar.gz
+/interpolate_image
