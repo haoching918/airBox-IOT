@@ -104,8 +104,12 @@ def store_date(day, time):
         timeWeek['data'].append(data)
     
     jsonData = json.dumps(timeWeek)
-    with open(f'./data/time_week/{curDatetime}-{time}.json', 'w') as f:
-        f.write(jsonData)
+    if time >= 10:
+        with open(f'./data/time_week/{curDatetime}-{time}.json', 'w') as f:
+            f.write(jsonData)
+    else :
+        with open(f'./data/time_week/{curDatetime}-0{time}.json', 'w') as f:
+            f.write(jsonData)
          
 # set cur time         
 with open('./info.json', 'r') as f:
