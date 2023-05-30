@@ -6,6 +6,7 @@
 /data/time_week
 /data/*.tar.gz
 /data/*.gz
+/data/*.csv
 /data/all_device_id.json
 /*.json
 /*.tar.gz
