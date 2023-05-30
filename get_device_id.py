@@ -6,9 +6,9 @@ from datetime import datetime
 def valid(d):
     if d['s_d0'] == -1:
         return False
-    if d['gps_lon'] < 120 or d['gps_lon'] > 122:
+    if d['gps_lon'] < 118.2 or d['gps_lon'] > 122.015:
         return False
-    if d['gps_lat'] < 22 or d['gps_lat'] > 25:
+    if d['gps_lat'] < 21.8 or d['gps_lat'] > 26.4:
         return False
     return True
 
