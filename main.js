@@ -45,7 +45,7 @@ class Map {
 		this.drawLegend()
 		this.baseMaps = {
 			"街道圖": this.OpenStreetMap_Mapnik,
-			"地形圖" : this.Stamen_Terrain,
+			"地形圖": this.Stamen_Terrain,
 		};
 		this.overlayMaps = {
 			"內插圖": this.idw,
@@ -325,7 +325,7 @@ var startDate = newDate.addDays(-7)
 setCurDate(newDateStr, newTime)
 initSelector()
 
-var timeDevicesData = await fetch_json("./data/time_week/" + newDateStr + "-" + String(newTime) + ".json")
+var timeDevicesData = await fetch_json("./data/time_week/" + newDateStr + "-" + (newTime >= 10 ? String(newTime) : "0" + String(newTime)) + ".json")
 var deviceWeekData = await fetch_json("./data/discretized_device_week/74DA38F70318.json")
 var geojson = await fetch_json("./data/geojson/" + newDateStr + "-" + String(newTime) + ".json")
 
@@ -341,8 +341,3 @@ myChart.chart.canvas.onclick = function (evt) {
 
 document.getElementById('submitDate').onclick = updateCurDateIdw
 document.getElementById('playAnimation').onclick = animate
-// document.getElementById('oneDay').onclick = updateChartTime1
-// document.getElementById('threeDays').onclick = updateChartTime3
-// document.getElementById('sevenDays').onclick = updateChartTime7
-
-
