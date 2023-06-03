@@ -1,24 +1,25 @@
 class Map {
+	// map setting
 	zoom = 8
 	latlng = L.latLng(23.5, 121);
-	constructor(data, grid) {
+	// base map
+	OpenStreetMap_Mapnik = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+		maxZoom: 19,
+		attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+	});
+	Stamen_Terrain = L.tileLayer('https://stamen-tiles-{s}.a.ssl.fastly.net/terrain/{z}/{x}/{y}{r}.{ext}', {
+		attribution: 'Map tiles by <a href="http://stamen.com">Stamen Design</a>, <a href="http://creativecommons.org/licenses/by/3.0">CC BY 3.0</a> &mdash; Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+		subdomains: 'abcd',
+		minZoom: 0,
+		maxZoom: 18,
+		ext: 'png'
+	});
+	constructor(data) {
 		this.timeDevicesData = data;
-		// create taiwan map layer
-		this.OpenStreetMap_Mapnik = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-			maxZoom: 19,
-			attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-		});
-		this.Stamen_Terrain = L.tileLayer('https://stamen-tiles-{s}.a.ssl.fastly.net/terrain/{z}/{x}/{y}{r}.{ext}', {
-			attribution: 'Map tiles by <a href="http://stamen.com">Stamen Design</a>, <a href="http://creativecommons.org/licenses/by/3.0">CC BY 3.0</a> &mdash; Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-			subdomains: 'abcd',
-			minZoom: 0,
-			maxZoom: 18,
-			ext: 'png'
-		});
 
 		this.airBoxPoints = []
 		this.timeDevicesData.data.forEach(d => {
-			if (d.gps_lon > 120 && d.gps_lat < 25 && d.gps_lat > 22 && d["pm2.5"] < 100) {
+			if (d.gps_lon < 122.015 && d.gps_lon > 118.2 && d.gps_lat < 26.4 && d.gps_lat > 21.8 && d["pm2.5"] < 100) {
 				this.airBoxPoints.push(L.marker([d.gps_lat, d.gps_lon]).bindPopup(d.siteName).on('click', function () {
 					getDevice(d.deviceId)
 				})) // create marker layer for device
@@ -26,23 +27,25 @@ class Map {
 		})
 		this.airBox = L.layerGroup(this.airBoxPoints)
 		// create idw layer
-		this.grid = grid;
-		this.idw = L.geoJson(this.grid, {
-			style: function (feature) {
-				return {
-					"color": "black",
-					"fillColor": getColor(feature.properties.solRad),
-					"opacity": 0,
-					"fillOpacity": 0.5
-				}
-			}
-		})
+		// this.grid = grid;
+		// this.idw = L.geoJson(this.grid, {
+		// 	style: function (feature) {
+		// 		return {
+		// 			"color": "black",
+		// 			"fillColor": getColor(feature.properties.solRad),
+		// 			"opacity": 0,
+		// 			"fillOpacity": 0.5
+		// 		}
+		// 	}
+		// })
+		this.map = L.map('map', { layers: [this.OpenStreetMap_Mapnik, this.idw] }).setView(this.latlng, this.zoom)
+		let imageUrl = 'https://maps.lib.utexas.edu/maps/historical/newark_nj_1922.jpg';
+		let latLngBounds = L.latLngBounds([[21.799311, 119.118464], [26.68202047785919, 123.33]]);
 
-		this.draw()
-	}
-	draw() {
-		this.maps = L.map('map', { layers: [this.OpenStreetMap_Mapnik, this.idw] }).setView(this.latlng, this.zoom);
-		this.drawLegend()
+		this.imageLayer = L.imageOverlay(imageUrl, latLngBounds, {
+			opacity: 0.2,
+			interactive: true
+		}).addTo(this.map)
 		this.baseMaps = {
 			"街道圖": this.OpenStreetMap_Mapnik,
 			"地形圖": this.Stamen_Terrain,
@@ -50,13 +53,19 @@ class Map {
 		this.overlayMaps = {
 			"內插圖": this.idw,
 			"空氣盒子站點": this.airBox,
+			"圖片" : this.imageLayer,
 		};
 
-		this.layerControl = L.control.layers(this.baseMaps, this.overlayMaps, { position: 'bottomright' }).addTo(this.maps);
+		this.layerControl = L.control.layers(this.baseMaps, this.overlayMaps, { position: 'bottomright' }).addTo(this.map)
+		this.drawLegend()
 	}
+	update_image(imageUrl) {
+		this.imageLayer.setUrl(imageUrl)
+	}
+
 	updateIdw(data) {
-		this.zoom = this.maps.getZoom()
-		this.latlng = this.maps.getCenter()
+		this.zoom = this.map.getZoom()
+		this.latlng = this.map.getCenter()
 		this.grid = data
 		this.idw = L.geoJson(this.grid, {
 			style: function (feature) {
@@ -69,8 +78,8 @@ class Map {
 			}
 		})
 		this.layerControl.remove()
-		this.maps.remove()
-		this.draw()
+		this.map.remove()
+
 	}
 	drawLegend() {
 		var legend = L.control({ position: "bottomleft" });
@@ -83,22 +92,25 @@ class Map {
 			}
 			return div;
 		}
-		legend.addTo(this.maps);
+		legend.addTo(this.map);
 	}
 }
 async function animate() {
-	var date = startDate
-	var time = newTime + 1
-	for (let i = 0; i < 56; i++) {
-		setCurDate(date.yyyymmdd(), time)
-		let path = "./data/geojson/" + date.yyyymmdd() + "-" + time + ".json"
-		let response = await fetch(path)
-		let newGrid = await response.json()
-		myMap.updateIdw(newGrid)
-		if (++time == 8)
-			date = date.addDays(1)
-		time %= 8
-	}
+	var imageUrl;
+	myMap.update_image(imageUrl)
+	// var date = startDate
+	// var time = newTime + 1
+	// var total = 24 / timeScale
+	// for (let i = 0; i < total * 7; i++) {
+	// 	setCurDate(date.yyyymmdd(), time)
+	// 	let path = "./data/geojson/" + date.yyyymmdd() + "-" + (time > 9 ? time : "0" + time) + ".json"
+	// 	let response = await fetch(path)
+	// 	let newGrid = await response.json()
+	// 	myMap.updateIdw(newGrid)
+	// 	if (++time == total)
+	// 		date = date.addDays(1)
+	// 	time %= total
+	// }
 }
 async function updateCurDateIdw() {
 	var date = document.getElementById("dateSelector").value
@@ -225,9 +237,9 @@ class Linechart {
 		let pmData = []
 		let tempData = []
 		let humidData = []
-		for (let date = startDate; date.getTime() < newDate.getTime(); date = date.addHours(3)) {
+		for (let date = startDate; date.getTime() < newDate.getTime(); date = date.addHours(timeScale)) {
 			let dateStr = date.yyyymmdd()
-			let timeStr = String(date.getHours() / 3)
+			let timeStr = String(date.getHours() / timeScale)
 			//labels.push(timeStr == "0" ? dateStr.slice(5) : timeStr)
 			labels.push(dateStr.slice(5) + " " + timeStr)
 			pmData.push(this.deviceWeekData.data[dateStr][timeStr]["avgPm2.5"])
@@ -267,7 +279,7 @@ class Linechart {
 
 function genDate(delimiter, dateStr, curTime) {
 	var splitDateStr = dateStr.split(delimiter)
-	return new Date(splitDateStr[0], splitDateStr[1] - 1, splitDateStr[2], curTime * 3 + 3)
+	return new Date(splitDateStr[0], splitDateStr[1] - 1, splitDateStr[2], curTime * timeScale + timeScale)
 }
 function validTime(dateStr, time) {
 	var date = genDate("-", dateStr, time)
@@ -287,7 +299,7 @@ function initSelector() {
 	var dateSelector = document.getElementById("dateSelector")
 	dateSelector.max = newDate.yyyymmdd()
 	dateSelector.min = newDate.addDays(-7).yyyymmdd()
-	document.getElementById("last_update").innerHTML = `最後更新時間 ${newDate.yyyymmdd()} ${(newTime + 1) * 3}:00 GMT+0`
+	document.getElementById("last_update").innerHTML = `最後更新時間 ${dateTimeStr} GMT+0`
 }
 
 async function fetch_json(path) {
@@ -316,20 +328,21 @@ Date.prototype.yyyymmdd = function () {
 };
 
 var info = await fetch_json("./info.json")
-var dateStr = info["update_datetime"]
-var newDateStr = dateStr.slice(0, 10) // yyyy-mm-dd
-var newTime = ~~(parseInt(dateStr.slice(11, 13)) / 3) - 1 // 0-7 int
+var dateTimeStr = info["update_datetime"]
+var timeScale = info["time_scale"]
+var newDateStr = dateTimeStr.slice(0, 10) // yyyy-mm-dd
+var newTime = ~~(parseInt(dateTimeStr.slice(11, 13)) / timeScale) - 1 // 0-7 int
 var newDate = genDate("-", newDateStr, newTime)
 var startDate = newDate.addDays(-7)
 
 setCurDate(newDateStr, newTime)
 initSelector()
 
-var timeDevicesData = await fetch_json("./data/time_week/" + newDateStr + "-" + (newTime >= 10 ? String(newTime) : "0" + String(newTime)) + ".json")
+var timeDevicesData = await fetch_json("./data/time_week/" + newDateStr + "-" + (newTime >= 10 ? String(newTime) : ("0" + String(newTime))) + ".json")
 var deviceWeekData = await fetch_json("./data/discretized_device_week/74DA38F70318.json")
-var geojson = await fetch_json("./data/geojson/" + newDateStr + "-" + String(newTime) + ".json")
+//var geojson = await fetch_json("./data/geojson/" + newDateStr + "-" + String(newTime) + ".json")
 
-var myMap = new Map(timeDevicesData, geojson)
+var myMap = new Map(timeDevicesData)
 var myChart = new Linechart(deviceWeekData)
 myChart.chart.canvas.onclick = function (evt) {
 	var activePoint = myChart.chart.getElementsAtEventForMode(evt, 'nearest', { intersect: true }, false)
