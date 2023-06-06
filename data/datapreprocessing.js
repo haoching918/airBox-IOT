@@ -61,7 +61,7 @@ async function generate_geojson(fileName) {
 
     var feat = { type: "FeatureCollection", features: [] }
     timeDevicesData.data.forEach(d => {
-        if (d.gps_lon > 120 && d.gps_lat < 25 && d.gps_lat > 22 && d["pm2.5"] < 100) {
+        if (d.gps_lon < 122.015 && d.gps_lon > 118.2 && d.gps_lat < 26.4 && d.gps_lat > 21.8 && d["pm2.5"] < 100) {
             feat.features.push({
                 geometry: {
                     type: "Point",
@@ -79,29 +79,28 @@ async function generate_geojson(fileName) {
     await fs.writeFile("./geojson/" + fileName + ".json", str, 'utf8')
     console.log(fileName + ".json complete writing")
 }
+
 async function main() {
     const data = await fs.readFile("../info.json", 'utf-8')
     info = JSON.parse(data)
 
-    var dateStr = info["update_datetime"]
-    var timeScale = info["time_scale"]
-    var newDateStr = dateStr.slice(0, 10)
-    var newTime = ~~(parseInt(dateStr.slice(11, 13)) / timeScale) - 1
+    dateTimeStr = info["update_datetime"]
+    timeScale = info["time_scale"]
+    var newDateStr = dateTimeStr.slice(0, 10)
+    var newTime = ~~(parseInt(dateTimeStr.slice(11, 13)) / timeScale) - 1
     var newDate = genDate("-", newDateStr, newTime)
     var startDate = newDate.addDays(-7)
     var curDate = newDate
     var curTime = newTime
+    var totalTime = 24 / timeScale
 
-    for (let i = ~~(parseInt(dateStr.slice(11, 13)) / timeScale) * 7 - 1; i >= 0; i--) {
-        fileName = curDate.yyyymmdd() + "-" + String(curTime)
+    for (let i = totalTime * 7; i > 0; i--) {
+        fileName = curDate.yyyymmdd() + "-" + (curTime >= 10 ? String(curTime) : "0" + String(curTime))
         generate_geojson(fileName)
         if (--curTime < 0) {
-            curTime += 8
+            curTime += totalTime
             curDate = curDate.addDays(-1)
         }
     }
 }
 main()
-
-
-

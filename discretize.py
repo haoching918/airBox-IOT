@@ -19,7 +19,7 @@ def initDeviceData():
         'data': {}
     }
     dateData = {}
-    for i in range(24//timeScale):
+    for i in range(8):
         scaleData = {}
         for j in range(24//timeScale):
             scaleData[str(j)] = {'pm2.5' : [], 
@@ -75,8 +75,7 @@ def store_device_week(id):
         deviceWeek['data'][str(deviceDatetime.date())][getScale(deviceDatetime.hour)]['humidity'].append(data['s_h0'])
         deviceWeek['data'][str(deviceDatetime.date())][getScale(deviceDatetime.hour)]['temperature'].append(data['s_t0'])
 
-    fillAvg(deviceWeek)
-    # allDeviceWeek.append(deviceWeek)   
+    fillAvg(deviceWeek)   
     jsonData = json.dumps(deviceWeek)
     with open(f'./data/discretized_device_week/{id}.json', 'w') as f:
         f.write(jsonData)
