@@ -38,24 +38,27 @@ class Map {
 		// 		}
 		// 	}
 		// })
-		this.map = L.map('map', { layers: [this.OpenStreetMap_Mapnik, this.idw] }).setView(this.latlng, this.zoom)
-		let imageUrl = 'https://maps.lib.utexas.edu/maps/historical/newark_nj_1922.jpg';
-		let latLngBounds = L.latLngBounds([[21.799311, 119.118464], [26.68202047785919, 123.33]]);
 
+		// create image layer 
+		let imageUrl = 'https://maps.lib.utexas.edu/maps/historical/newark_nj_1922.jpg';
+		let latLngBounds = L.latLngBounds([[21.799311, 119.118464], [23.68202047785919, 121.33]]);
 		this.imageLayer = L.imageOverlay(imageUrl, latLngBounds, {
 			opacity: 0.2,
 			interactive: true
-		}).addTo(this.map)
+		})
+		// create map
+		this.map = L.map('map', { layers: [this.OpenStreetMap_Mapnik, this.imageLayer] }).setView(this.latlng, this.zoom)
+		this.imageLayer.addTo(this.map)
+
+		// base & overlay layer for layerControl
 		this.baseMaps = {
 			"街道圖": this.OpenStreetMap_Mapnik,
 			"地形圖": this.Stamen_Terrain,
 		};
 		this.overlayMaps = {
-			"內插圖": this.idw,
 			"空氣盒子站點": this.airBox,
-			"圖片" : this.imageLayer,
+			"圖片": this.imageLayer,
 		};
-
 		this.layerControl = L.control.layers(this.baseMaps, this.overlayMaps, { position: 'bottomright' }).addTo(this.map)
 		this.drawLegend()
 	}
@@ -174,6 +177,7 @@ class Linechart {
 			data: chartData,
 			options: {
 				responsive: true,
+				maintainAspectRatio: false,
 				layout: {
 					padding: {
 						top: 15,
@@ -354,3 +358,37 @@ myChart.chart.canvas.onclick = function (evt) {
 
 document.getElementById('submitDate').onclick = updateCurDateIdw
 document.getElementById('playAnimation').onclick = animate
+// Resize functionality
+var resizer = document.getElementById("resizer");
+var mapContainer = document.getElementById("map-container")
+var chartContainer = document.getElementById("chart-container")
+
+var isResizing = false;
+var startX = 0;
+var startWidth = 0;
+
+resizer.addEventListener('mousedown', function (e) {
+	console.log("mouse down")
+	e.preventDefault();
+	isResizing = true;
+	startX = e.clientX;
+	startWidth = mapContainer.offsetWidth;
+});
+
+document.addEventListener('mousemove', function (e) {
+	if (!isResizing) return;
+	console.log("mouse moving")
+	var width = startWidth + (e.clientX - startX);
+	
+	mapContainer.style.width = width + 'px';
+	console.log("s:",chartContainer.style.left)
+	width += 50
+	chartContainer.style.left = width + 'px'
+	myMap.map.invalidateSize();
+	myChart.chart.resize()
+});
+
+document.addEventListener('mouseup', function () {
+	console.log("mouse up")
+	isResizing = false;
+});
