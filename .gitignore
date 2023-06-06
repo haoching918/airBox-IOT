@@ -8,5 +8,7 @@
 /data/*.gz
 /data/*.csv
 /data/all_device_id.json
+/data/traindata
 /*.json
 /*.tar.gz
+/interpolate_image
