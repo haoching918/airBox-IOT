@@ -67,14 +67,14 @@ def store_device_week(id):
     for d in weekData['feeds'][0]['AirBox']:
         data = list(d.values())[0]
         deviceDatetime = dt.datetime.strptime(data['timestamp'], '%Y-%m-%dT%H:%M:%SZ')
-        if (deviceDatetime < startDatetime or deviceDatetime > endDatetime):
+        if deviceDatetime < startDatetime or deviceDatetime > endDatetime:
             continue
-        if (data['s_d0'] > 100):
-            continue
-        deviceWeek['data'][str(deviceDatetime.date())][getScale(deviceDatetime.hour)]['pm2.5'].append(data['s_d0'])
+        if data['s_d0'] < 100 or data['s_d0'] > 0:
+            deviceWeek['data'][str(deviceDatetime.date())][getScale(deviceDatetime.hour)]['pm2.5'].append(data['s_d0'])
+        if data['s_t0'] > 0 or data['s_t0'] < 40:
+            deviceWeek['data'][str(deviceDatetime.date())][getScale(deviceDatetime.hour)]['temperature'].append(data['s_t0'])
         deviceWeek['data'][str(deviceDatetime.date())][getScale(deviceDatetime.hour)]['humidity'].append(data['s_h0'])
-        deviceWeek['data'][str(deviceDatetime.date())][getScale(deviceDatetime.hour)]['temperature'].append(data['s_t0'])
-
+        
     fillAvg(deviceWeek)   
     jsonData = json.dumps(deviceWeek)
     with open(f'./data/discretized_device_week/{id}.json', 'w') as f:
