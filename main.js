@@ -117,8 +117,8 @@ class Map {
 		}).addTo(map);
 	}
 	updateIdw(url) {
-		d3.select('#svgele')
-		.attr('xlikk:herf',url)
+		d3.select('#svgele').select('#img')
+			.attr('xlink:href', url)
 
 	}
 	drawLegend() {
@@ -139,15 +139,24 @@ function animate() {
 	var date = startDate
 	var time = newTime + 1
 	var total = 24 / timeScale
+	var filename = []
 	for (let i = 0; i < total * 7; i++) {
 		setCurDate(date.yyyymmdd(), time)
 		let path = "./interpolate_image/" + date.yyyymmdd() + "-" + (time > 9 ? time : "0" + time) + ".png"
-		myMap.updateIdw(path)
-		console.log(path)
+		filename.push(path)
 		if (++time == total)
 			date = date.addDays(1)
 		time %= total
 	}
+	var index = 0
+	setInterval(function () {
+		if (index >= filename.length) {
+			return
+		}
+		console.log(filename[index])
+		myMap.updateIdw(filename[index])
+		++index
+	}, 41);
 }
 async function updateCurDateIdw() {
 	var date = document.getElementById("dateSelector").value
