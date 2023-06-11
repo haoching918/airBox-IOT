@@ -145,7 +145,6 @@ function animate() {
 		if (index >= filename.length) {
 			return
 		}
-		console.log(filename[index])
 		myMap.updateIdw(filename[index])
 		++index
 	}, 41);
@@ -167,7 +166,7 @@ async function getDevice(deviceId) {
 }
 function predict() {
 	let nextDate = newDate.addHours(1)
-	var time = (newTime + 1) % (24/timeScale)
+	var time = (newTime + 1) % (24 / timeScale)
 	let path = "./interpolate_image/" + nextDate.yyyymmdd() + "-" + (time > 9 ? time : "0" + time) + ".png"
 	myMap.updateIdw(path)
 }
@@ -340,7 +339,7 @@ function initSelector() {
 	dateSelector.max = newDate.yyyymmdd()
 	dateSelector.min = newDate.addDays(-7).yyyymmdd()
 	document.getElementById("last_update").innerHTML = `最後更新時間 ${dateTimeStr} GMT+0`
-	
+
 	var selector = document.getElementById("timeSelector");
 	// Create an array of options
 	var options = [];
