@@ -26,18 +26,6 @@ class Map {
 			}
 		})
 		this.airBox = L.layerGroup(this.airBoxPoints)
-		// create idw layer
-		// this.grid = grid;
-		// this.idw = L.geoJson(this.grid, {
-		// 	style: function (feature) {
-		// 		return {
-		// 			"color": "black",
-		// 			"fillColor": getColor(feature.properties.solRad),
-		// 			"opacity": 0,
-		// 			"fillOpacity": 0.5
-		// 		}
-		// 	}
-		// })
 
 		// create image layer 
 		let imageUrl = 'https://maps.lib.utexas.edu/maps/historical/newark_nj_1922.jpg';
@@ -99,21 +87,17 @@ class Map {
 	}
 }
 async function animate() {
-	var imageUrl;
-	myMap.update_image(imageUrl)
-	// var date = startDate
-	// var time = newTime + 1
-	// var total = 24 / timeScale
-	// for (let i = 0; i < total * 7; i++) {
-	// 	setCurDate(date.yyyymmdd(), time)
-	// 	let path = "./data/geojson/" + date.yyyymmdd() + "-" + (time > 9 ? time : "0" + time) + ".json"
-	// 	let response = await fetch(path)
-	// 	let newGrid = await response.json()
-	// 	myMap.updateIdw(newGrid)
-	// 	if (++time == total)
-	// 		date = date.addDays(1)
-	// 	time %= total
-	// }
+	var date = startDate
+	var time = newTime + 1
+	var total = 24 / timeScale
+	for (let i = 0; i < total * 7; i++) {
+		setCurDate(date.yyyymmdd(), time)
+		let path = "./data/geojson/" + date.yyyymmdd() + "-" + (time > 9 ? time : "0" + time) + ".json"
+		myMap.update_image(path)
+		if (++time == total)
+			date = date.addDays(1)
+		time %= total
+	}
 }
 async function updateCurDateIdw() {
 	var date = document.getElementById("dateSelector").value
@@ -129,6 +113,9 @@ async function getDevice(deviceId) {
 	var response = await fetch(`./data/discretized_device_week/${deviceId}.json`)
 	var deviceWeekData = await response.json()
 	myChart.setData(deviceWeekData)
+}
+async function predict() {
+
 }
 function getColor(x) {
 	return x < 11 ? '#9CFF9C' :
@@ -164,12 +151,6 @@ class Linechart {
 					fill: false,
 					borderColor: "rgb(200, 0, 0)",
 				},
-				// {
-				// 	label: "",
-				// 	data: [],
-				// 	fill: false,
-				// 	borderColor: "rgb(0, 0, 200)",
-				// },
 			],
 		}
 		let config = {
@@ -300,10 +281,29 @@ function setCurDate(dateStr, time) {
 	timeSelector.value = String(time)
 }
 function initSelector() {
+	// init date selector
 	var dateSelector = document.getElementById("dateSelector")
 	dateSelector.max = newDate.yyyymmdd()
 	dateSelector.min = newDate.addDays(-7).yyyymmdd()
 	document.getElementById("last_update").innerHTML = `最後更新時間 ${dateTimeStr} GMT+0`
+	
+	var selector = document.getElementById("timeSelector");
+	// Create an array of options
+	var options = [];
+	for (let i = 0; i < 24 / timeScale; ++i) {
+		var tmp = {};
+		tmp["value"] = i;
+		tmp["text"] = i;
+		options.push(tmp)
+	}
+
+	// Generate the options dynamically
+	for (var i = 0; i < options.length; i++) {
+		var option = document.createElement("option");
+		option.value = options[i].value;
+		option.text = options[i].text;
+		selector.appendChild(option);
+	}
 }
 
 async function fetch_json(path) {
@@ -358,7 +358,9 @@ myChart.chart.canvas.onclick = function (evt) {
 
 document.getElementById('submitDate').onclick = updateCurDateIdw
 document.getElementById('playAnimation').onclick = animate
-// Resize functionality
+document.getElementById('predict').onclick = predict
+
+//// Resize functionality
 var resizer = document.getElementById("resizer");
 var mapContainer = document.getElementById("map-container")
 var chartContainer = document.getElementById("chart-container")
@@ -379,9 +381,9 @@ document.addEventListener('mousemove', function (e) {
 	if (!isResizing) return;
 	console.log("mouse moving")
 	var width = startWidth + (e.clientX - startX);
-	
+
 	mapContainer.style.width = width + 'px';
-	console.log("s:",chartContainer.style.left)
+	console.log("s:", chartContainer.style.left)
 	width += 50
 	chartContainer.style.left = width + 'px'
 	myMap.map.invalidateSize();
