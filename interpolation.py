@@ -75,7 +75,15 @@ def interpolate(path,filename):
     print('success',img_name,'write')
     return
 
+
 if __name__ == '__main__':
+    arr = []
+    for filename in os.listdir('./interpolate_image/'):
+        filename[:len(filename) -4 ] + 'json'
+        arr.append(filename[:len(filename) -4 ] + '.json')
+    print(arr)
     for filename in os.listdir(directory):
+        if filename in arr:
+            continue
         interpolate(directory,filename)
         gc.collect()
