@@ -19,6 +19,8 @@ def interpolate(path,filename):
         file.close()
     # decode json file data
     points = np.array([(d['gps_lon'], d['gps_lat'], d['pm2.5']) for d in data['data']])
+    points = np.where(points > 500, 500,points )
+    points = np.where(points < 0 , 0 , points)
     data = None
     grid_size = 0.005
     x_min,x_max = 118.21,122
