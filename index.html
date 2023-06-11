@@ -82,18 +82,10 @@
 	</div>
 	<div>
 		目前時間<input type="date" id="dateSelector">
-		<select id="timeSelector">
-			<option value="0">00:00 - 03:00</option>
-			<option value="1">03:00 - 06:00</option>
-			<option value="2">06:00 - 09:00</option>
-			<option value="3">09:00 - 12:00</option>
-			<option value="4">12:00 - 15:00</option>
-			<option value="5">15:00 - 18:00</option>
-			<option value="6">18:00 - 21:00</option>
-			<option value="7">21:00 - 24:00</option>
-		</select>
+		<select id="timeSelector"></select>
 		<input type="submit" onclick="updateLayer()" id="submitDate">
 		<input type="button" value="動畫" onclick="animate()" id="playAnimation">
+		<input type="button" value="預報" onclick="predict()" id="predict">
 		<p id="last_update"></p>
 	</div>
 	<script src="main.js" type="module"></script>
