@@ -26,16 +26,8 @@ class Map {
 		})
 		this.airBox = L.layerGroup(this.airBoxPoints)
 
-		// create image layer 
-		let imageUrl = 'https://maps.lib.utexas.edu/maps/historical/newark_nj_1922.jpg';
-		let latLngBounds = L.latLngBounds([[21.799311, 119.118464], [23.68202047785919, 121.33]]);
-		this.imageLayer = L.imageOverlay(imageUrl, latLngBounds, {
-			opacity: 0.2,
-			interactive: true
-		})
 		// create map
-		this.map = L.map('map', { layers: [this.OpenStreetMap_Mapnik, this.imageLayer] }).setView(this.latlng, this.zoom)
-		this.imageLayer.addTo(this.map)
+		this.map = L.map('map', { layers: [this.OpenStreetMap_Mapnik] }).setView(this.latlng, this.zoom)
 
 		// base & overlay layer for layerControl
 		this.baseMaps = {
@@ -44,7 +36,6 @@ class Map {
 		};
 		this.overlayMaps = {
 			"空氣盒子站點": this.airBox,
-			"圖片": this.imageLayer,
 		};
 		this.layerControl = L.control.layers(this.baseMaps, this.overlayMaps, { position: 'bottomright' }).addTo(this.map)
 		this.drawLegend()
@@ -115,6 +106,7 @@ class Map {
 			opacity: 1,
 			interactive: true
 		}).addTo(map);
+		this.layerControl.addOverlay(svgOverlay, "內插圖")
 	}
 	updateIdw(url) {
 		d3.select('#svgele')
@@ -149,23 +141,26 @@ function animate() {
 		time %= total
 	}
 }
-async function updateCurDateIdw() {
+function updateCurDateIdw() {
 	var date = document.getElementById("dateSelector").value
 	var time = document.getElementById("timeSelector").value
 	if (!validTime(date, time)) {
 		alert("Invalid date")
 		return
 	}
-	var newGrid = await fetch_json("./data/geojson/" + date + "-" + time + ".json")
-	myMap.updateIdw(newGrid)
+	let path = "./interpolate_image/" + date + "-" + (time > 9 ? time : "0" + time) + ".png"
+	myMap.updateIdw(path)
 }
 async function getDevice(deviceId) {
 	var response = await fetch(`./data/discretized_device_week/${deviceId}.json`)
 	var deviceWeekData = await response.json()
 	myChart.setData(deviceWeekData)
 }
-async function predict() {
-
+function predict() {
+	let nextDate = newDate.addHours(1)
+	var time = (newTime + 1) % (24/timeScale)
+	let path = "./interpolate_image/" + nextDate.yyyymmdd() + "-" + (time > 9 ? time : "0" + time) + ".png"
+	myMap.updateIdw(path)
 }
 function getColor(x) {
 	return x < 11 ? '#9CFF9C' :
@@ -394,7 +389,7 @@ initSelector()
 
 var timeDevicesData = await fetch_json("./data/time_week/" + newDateStr + "-" + (newTime >= 10 ? String(newTime) : ("0" + String(newTime))) + ".json")
 var deviceWeekData = await fetch_json("./data/discretized_device_week/74DA38F70318.json")
-//var geojson = await fetch_json("./data/geojson/" + newDateStr + "-" + String(newTime) + ".json")
+
 
 var myMap = new Map(timeDevicesData)
 var myChart = new Linechart(deviceWeekData)
@@ -420,7 +415,6 @@ var startX = 0;
 var startWidth = 0;
 
 resizer.addEventListener('mousedown', function (e) {
-	console.log("mouse down")
 	e.preventDefault();
 	isResizing = true;
 	startX = e.clientX;
@@ -429,11 +423,8 @@ resizer.addEventListener('mousedown', function (e) {
 
 document.addEventListener('mousemove', function (e) {
 	if (!isResizing) return;
-	console.log("mouse moving")
 	var width = startWidth + (e.clientX - startX);
-
 	mapContainer.style.width = width + 'px';
-	console.log("s:", chartContainer.style.left)
 	width += 50
 	chartContainer.style.left = width + 'px'
 	myMap.map.invalidateSize();
@@ -441,6 +432,5 @@ document.addEventListener('mousemove', function (e) {
 });
 
 document.addEventListener('mouseup', function () {
-	console.log("mouse up")
 	isResizing = false;
 });

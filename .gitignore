@@ -12,4 +12,4 @@
 /*.json
 /*.tar.gz
 /interpolate_image
-/prediction/
+/prediction/train_data
