@@ -18,6 +18,7 @@
 			width: 100%;
 			height: 100%;
 		}
+
 		.resizable {
 			position: absolute;
 			right: 0;
@@ -71,9 +72,11 @@
 
 <body>
 	<div id="map-container">
-		<div id="map"></div>
+		<div id="map">
+		</div>
 		<div id="resizer" class="resizable"></div>
 	</div>
+	<svg id = "svgele" viewBox="0 0 800 800"></svg>
 	<div id="chart-container">
 		<canvas id="myChart"></canvas>
 	</div>
@@ -107,6 +110,8 @@
 	<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 	<script src='https://unpkg.com/@turf/turf@6/turf.min.js'></script>
+	<script src="https://d3js.org/d3.v6.min.js"></script>
+	<script src="https://d3js.org/topojson.v3.min.js"></script>
 </body>
 
 </html>

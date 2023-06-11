@@ -16,7 +16,6 @@ class Map {
 	});
 	constructor(data) {
 		this.timeDevicesData = data;
-
 		this.airBoxPoints = []
 		this.timeDevicesData.data.forEach(d => {
 			if (d.gps_lon < 122.015 && d.gps_lon > 118.2 && d.gps_lat < 26.4 && d.gps_lat > 21.8 && d["pm2.5"] < 100) {
@@ -26,18 +25,6 @@ class Map {
 			}
 		})
 		this.airBox = L.layerGroup(this.airBoxPoints)
-		// create idw layer
-		// this.grid = grid;
-		// this.idw = L.geoJson(this.grid, {
-		// 	style: function (feature) {
-		// 		return {
-		// 			"color": "black",
-		// 			"fillColor": getColor(feature.properties.solRad),
-		// 			"opacity": 0,
-		// 			"fillOpacity": 0.5
-		// 		}
-		// 	}
-		// })
 
 		// create image layer 
 		let imageUrl = 'https://maps.lib.utexas.edu/maps/historical/newark_nj_1922.jpg';
@@ -61,27 +48,77 @@ class Map {
 		};
 		this.layerControl = L.control.layers(this.baseMaps, this.overlayMaps, { position: 'bottomright' }).addTo(this.map)
 		this.drawLegend()
+		this.drawSvg(this.map)
 	}
 	update_image(imageUrl) {
 		this.imageLayer.setUrl(imageUrl)
 	}
 
-	updateIdw(data) {
-		this.zoom = this.map.getZoom()
-		this.latlng = this.map.getCenter()
-		this.grid = data
-		this.idw = L.geoJson(this.grid, {
-			style: function (feature) {
-				return {
-					"color": "black",
-					"fillColor": getColor(feature.properties.solRad),
-					"opacity": 0,
-					"fillOpacity": 0.5
-				}
+	drawSvg(map) {
+		let svgLayer = L.svg();
+		// svgLayer.addTo(map)
+		let svg = d3.select('#svgele').attr('id', 'svgele');
+		d3.json("/data/taiwanTopo.json").then(function (topology) {
+			// Convert topojson to geojson
+			let geojson = topojson.feature(topology, topology.objects.map); // replace 'yourObject' with your topojson object
+			let transform = d3.geoTransform({ point: projectPoint });
+			let path = d3.geoPath().projection(transform);
+			let sw = map.latLngToLayerPoint(new L.LatLng(21.895, 118.21)), ne = map.latLngToLayerPoint(new L.LatLng(26.5, 123.5))
+			console.log(sw, ne)
+
+			let pro = d3.geoMercator()
+				.fitExtent([[0, 0], [800, 800]], geojson);
+			let geoGenerator = d3.geoPath()
+				.projection(pro);
+			var bound = [118.21, 123.5, 21.895, 26.5];
+			var bound_ul = pro([bound[0], bound[3]]), bound_dr = pro([bound[1], bound[2]])
+			console.log(pro.invert([0, 0]), pro.invert([800, 800]))
+			var imgWidth = bound_dr[0] - bound_ul[0];
+			var imgHeight = bound_dr[1] - bound_ul[1];
+			console.log(d3.geoBounds(geojson));
+			svg.append("clipPath")
+				.attr("id", "clip")
+				.selectAll("path")
+				.data(geojson.features)
+				.enter()
+				.append("path")
+				.attr("d", geoGenerator);
+
+			svg.append("image")
+				.attr('id', 'img')
+				.attr("xlink:href", "/interpolate_image/2023-05-27-09.png")
+				.attr("x", bound_ul[0])
+				.attr("y", bound_ul[1] + 5)
+				.attr("width", imgWidth)
+				.attr("height", imgHeight)
+				.attr('opacity', 0.7)
+				.attr("clip-path", "url(#clip)")
+
+			// map.on("zoom", zoom);
+
+
+			function zoom() {
+				svg.select('#clip').attr('transform', transform)
+				svg.select('#img').attr('transform', transform)
 			}
-		})
-		this.layerControl.remove()
-		this.map.remove()
+
+			function projectPoint(lon, lat) {
+				let point = map.latLngToLayerPoint(new L.LatLng(lat, lon));
+				this.stream.point(point.x, point.y);
+			}
+		});
+		var svgElement = document.querySelector('#svgele')
+		var latLngBounds = L.latLngBounds([[21.73063921314905, 118.21459926092473], [26.54207398238185, 123.48914460761736]]);
+		map.fitBounds(latLngBounds);
+
+		var svgOverlay = L.svgOverlay(svgElement, latLngBounds, {
+			opacity: 1,
+			interactive: true
+		}).addTo(map);
+	}
+	updateIdw(url) {
+		d3.select('#svgele')
+		.attr('xlikk:herf',url)
 
 	}
 	drawLegend() {
@@ -98,22 +135,19 @@ class Map {
 		legend.addTo(this.map);
 	}
 }
-async function animate() {
-	var imageUrl;
-	myMap.update_image(imageUrl)
-	// var date = startDate
-	// var time = newTime + 1
-	// var total = 24 / timeScale
-	// for (let i = 0; i < total * 7; i++) {
-	// 	setCurDate(date.yyyymmdd(), time)
-	// 	let path = "./data/geojson/" + date.yyyymmdd() + "-" + (time > 9 ? time : "0" + time) + ".json"
-	// 	let response = await fetch(path)
-	// 	let newGrid = await response.json()
-	// 	myMap.updateIdw(newGrid)
-	// 	if (++time == total)
-	// 		date = date.addDays(1)
-	// 	time %= total
-	// }
+function animate() {
+	var date = startDate
+	var time = newTime + 1
+	var total = 24 / timeScale
+	for (let i = 0; i < total * 7; i++) {
+		setCurDate(date.yyyymmdd(), time)
+		let path = "./interpolate_image/" + date.yyyymmdd() + "-" + (time > 9 ? time : "0" + time) + ".png"
+		myMap.updateIdw(path)
+		console.log(path)
+		if (++time == total)
+			date = date.addDays(1)
+		time %= total
+	}
 }
 async function updateCurDateIdw() {
 	var date = document.getElementById("dateSelector").value
@@ -164,12 +198,6 @@ class Linechart {
 					fill: false,
 					borderColor: "rgb(200, 0, 0)",
 				},
-				// {
-				// 	label: "",
-				// 	data: [],
-				// 	fill: false,
-				// 	borderColor: "rgb(0, 0, 200)",
-				// },
 			],
 		}
 		let config = {
@@ -379,9 +407,9 @@ document.addEventListener('mousemove', function (e) {
 	if (!isResizing) return;
 	console.log("mouse moving")
 	var width = startWidth + (e.clientX - startX);
-	
+
 	mapContainer.style.width = width + 'px';
-	console.log("s:",chartContainer.style.left)
+	console.log("s:", chartContainer.style.left)
 	width += 50
 	chartContainer.style.left = width + 'px'
 	myMap.map.invalidateSize();
